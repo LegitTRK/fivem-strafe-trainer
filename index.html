@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta name="description" content="FiveM Strafe Trainer - Practice WASD and DWAS movement combinations with BPM tracking. Improve your FiveM strafe skills.">
+
+<meta name="keywords" content="FiveM Strafe Trainer, FiveM strafe, WASD trainer, DWAS trainer, FiveM movement practice">
+
+<meta name="author" content="FiveM Strafe Trainer">
+
+<title>FiveM Strafe Trainer - WASD Movement Training</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#111;
+    color:white;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    transition:background .15s;
+}
+
+.container{
+    text-align:center;
+}
+
+#fullscreenBtn{
+    margin-bottom:15px;
+    padding:10px 20px;
+    font-size:18px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.stats{
+    display:flex;
+    justify-content:center;
+    gap:25px;
+    margin-bottom:20px;
+    font-size:22px;
+    font-weight:bold;
+    flex-wrap:wrap;
+}
+
+#combo{
+    font-size:22px;
+    margin-bottom:20px;
+}
+
+#layout{
+    display:flex;
+    align-items:center;
+    gap:40px;
+}
+
+#left-panel{
+    width:150px;
+    font-size:40px;
+    font-weight:bold;
+    color:red;
+    transition:.1s;
+}
+
+.shift-active{
+    color:#00ff66 !important;
+}
+
+#arena{
+    width:500px;
+    height:500px;
+    border:3px solid white;
+    position:relative;
+}
+
+#dot{
+    width:18px;
+    height:18px;
+    background:white;
+    border-radius:50%;
+    position:absolute;
+    left:241px;
+    top:241px;
+}
+
+#right-panel{
+    width:180px;
+    text-align:left;
+}
+
+.combo-text{
+    font-size:32px;
+    margin:20px 0;
+    font-weight:bold;
+}
+
+.keyboard{
+    margin-top:25px;
+}
+
+.row{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    margin:10px;
+}
+
+.key{
+    width:70px;
+    height:70px;
+    border:2px solid white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:28px;
+    font-weight:bold;
+    border-radius:10px;
+}
+
+.active{
+    background:#00ff66;
+    color:black;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <button id="fullscreenBtn">Fullscreen</button>
+
+    <div class="stats">
+        <div id="bpm">BPM: 0</div>
+        <div id="bestBpm">Best BPM: 0</div>
+        <div id="streak">Streak: 0</div>
+        <div id="bestStreak">Best Streak: 0</div>
+        <div id="errors">Errors: 0</div>
+    </div>
+
+    <div id="combo">Pattern: Waiting...</div>
+
+    <div id="layout">
+
+        <div id="left-panel">
+            SHIFT
+        </div>
+
+        <div id="arena">
+            <div id="dot"></div>
+        </div>
+
+        <div id="right-panel">
+            <div class="combo-text">W A S D</div>
+            <div class="combo-text">D W A S</div>
+        </div>
+
+    </div>
+
+    <div class="keyboard">
+        <div class="row">
+            <div class="key" id="W">W</div>
+        </div>
+
+        <div class="row">
+            <div class="key" id="A">A</div>
+            <div class="key" id="S">S</div>
+            <div class="key" id="D">D</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+
+const dot = document.getElementById("dot");
+
+const centerX = 241;
+const centerY = 241;
+const distance = 180;
+
+let presses = [];
+
+let bestBpm =
+parseInt(localStorage.getItem("bestBpm")) || 0;
+
+let bestStreak =
+parseInt(localStorage.getItem("bestStreak")) || 0;
+
+let streak = 0;
+let errors = 0;
+
+const patterns = [
+    ["W","A","S","D"],
+    ["D","W","A","S"]
+];
+
+let currentPattern = null;
+let index = 0;
+
+function flashRed(){
+
+    document.body.style.background = "#700";
+
+    setTimeout(()=>{
+        document.body.style.background = "#111";
+    },150);
+}
+
+function moveCenter(){
+
+    dot.style.left = centerX + "px";
+    dot.style.top = centerY + "px";
+}
+
+document.getElementById("fullscreenBtn")
+.addEventListener("click",()=>{
+
+    if(!document.fullscreenElement){
+        document.documentElement.requestFullscreen();
+    }else{
+        document.exitFullscreen();
+    }
+
+});
+
+document.addEventListener("keydown",(e)=>{
+
+    if(e.key === "Shift"){
+        document.getElementById("left-panel")
+        .classList.add("shift-active");
+    }
+
+    const key = e.key.toUpperCase();
+
+    if(!["W","A","S","D"].includes(key)) return;
+
+    presses.push(Date.now());
+
+    document.getElementById(key).classList.add("active");
+
+    if(currentPattern === null){
+
+        if(key === "W"){
+            currentPattern = patterns[0];
+            index = 1;
+            document.getElementById("combo").textContent =
+            "Pattern: WASD";
+        }
+        else if(key === "D"){
+            currentPattern = patterns[1];
+            index = 1;
+            document.getElementById("combo").textContent =
+            "Pattern: DWAS";
+        }
+        else{
+            errors++;
+            streak = 0;
+            flashRed();
+            return;
+        }
+    }
+    else{
+
+        if(key === currentPattern[index]){
+
+            index++;
+
+            if(index >= currentPattern.length){
+
+                streak++;
+
+                if(streak > bestStreak){
+                    bestStreak = streak;
+                    localStorage.setItem("bestStreak", bestStreak);
+                }
+
+                index = 0;
+            }
+
+        }else{
+
+            errors++;
+            streak = 0;
+
+            flashRed();
+
+            currentPattern = null;
+            index = 0;
+
+            document.getElementById("combo").textContent =
+            "Pattern: Waiting...";
+        }
+    }
+
+    if(key==="W"){
+        dot.style.left = (centerX-distance)+"px";
+        dot.style.top = (centerY-distance)+"px";
+    }
+
+    if(key==="D"){
+        dot.style.left = (centerX+distance)+"px";
+        dot.style.top = (centerY-distance)+"px";
+    }
+
+    if(key==="S"){
+        dot.style.left = (centerX+distance)+"px";
+        dot.style.top = (centerY+distance)+"px";
+    }
+
+    if(key==="A"){
+        dot.style.left = (centerX-distance)+"px";
+        dot.style.top = (centerY+distance)+"px";
+    }
+});
+
+document.addEventListener("keyup",(e)=>{
+
+    if(e.key === "Shift"){
+        document.getElementById("left-panel")
+        .classList.remove("shift-active");
+    }
+
+    const key = e.key.toUpperCase();
+
+    if(["W","A","S","D"].includes(key)){
+        document.getElementById(key).classList.remove("active");
+        moveCenter();
+    }
+});
+
+setInterval(()=>{
+
+    const now = Date.now();
+
+    presses = presses.filter(t => now - t < 10000);
+
+    const bpm = Math.round((presses.length / 10) * 60);
+
+    if(bpm > bestBpm){
+        bestBpm = bpm;
+        localStorage.setItem("bestBpm", bestBpm);
+    }
+
+    document.getElementById("bpm").textContent =
+    "BPM: " + bpm;
+
+    document.getElementById("bestBpm").textContent =
+    "Best BPM: " + bestBpm;
+
+    document.getElementById("streak").textContent =
+    "Streak: " + streak;
+
+    document.getElementById("bestStreak").textContent =
+    "Best Streak: " + bestStreak;
+
+    document.getElementById("errors").textContent =
+    "Errors: " + errors;
+
+},100);
+
+</script>
+
+</body>
+</html>
