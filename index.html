@@ -145,6 +145,20 @@ body{
     background:#00ff66;
     color:black;
 }
+    #resetBtn{
+    background:red;
+    color:white;
+    border:none;
+    padding:10px 15px;
+    font-size:18px;
+    font-weight:bold;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+#resetBtn:hover{
+    opacity:0.8;
+}
 </style>
 </head>
 <body>
@@ -169,6 +183,7 @@ text-align:center;
         <div id="streak">Streak: 0</div>
         <div id="bestStreak">Best Streak: 0</div>
         <div id="errors">Errors: 0</div>
+        <button id="resetBtn">RESET</button>
     </div>
 
     <div id="combo">Pattern: Waiting...</div>
@@ -279,8 +294,20 @@ function moveCenter(){
     dot.style.top = centerY + "px";
 }
 
-document.getElementById("fullscreenBtn")
+document.getElementById("resetBtn")
 .addEventListener("click",()=>{
+
+    streak = 0;
+    errors = 0;
+    presses = [];
+
+    bestBpm = 0;
+    bestStreak = 0;
+
+    localStorage.removeItem("bestBpm");
+    localStorage.removeItem("bestStreak");
+
+});
 
     if(!document.fullscreenElement){
         document.documentElement.requestFullscreen();
