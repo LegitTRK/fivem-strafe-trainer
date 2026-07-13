@@ -166,7 +166,7 @@ body{
 <div class="container">
 
     <button id="fullscreenBtn">Fullscreen</button>
-    <input id="playerName" placeholder="Enter Name"
+    <input id="playerName" placeholder="Name" maxlength="12"
 style="
 padding:10px;
 margin-bottom:15px;
@@ -255,7 +255,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const dot = document.getElementById("dot");
+const savedName = localStorage.getItem("playerName");
 
+if(savedName){
+    document.getElementById("playerName").value = savedName;
+    document.getElementById("playerName").disabled = true;
+}
 const centerX = 241;
 const centerY = 241;
 const distance = 180;
@@ -489,7 +494,7 @@ async function saveScore() {
     document.getElementById("playerName").value.trim();
 
     if(!playerName) return;
-
+    localStorage.setItem("playerName", playerName);
     const playerRef =
     doc(db,"leaderboard",playerName);
 
