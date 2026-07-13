@@ -153,7 +153,24 @@ body{
 <div class="container">
 
     <button id="fullscreenBtn">Fullscreen</button>
+    <input id="playerName" placeholder="Enter Name"
+style="
+padding:10px;
+margin-bottom:15px;
+font-size:18px;
+border-radius:8px;
+border:none;
+text-align:center;
+">
 
+<div id="leaderboard"
+style="
+margin-bottom:20px;
+font-size:18px;
+">
+<h2>🏆 Top 10 Leaderboard</h2>
+<ol id="leaderboard-list"></ol>
+</div>
     <div class="stats">
         <div id="bpm">BPM: 0</div>
         <div id="bestBpm">Best BPM: 0</div>
@@ -195,8 +212,31 @@ body{
 
 </div>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  query,
+  orderBy,
+  limit,
+  getDocs,
+  doc,
+  getDoc,
+  setDoc
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
+const firebaseConfig = {
+  apiKey: "AIzaSyCGaQSKC8T1xSHjeC3j4GDqK-53yUFDWRQ",
+  authDomain: "fivem-strafe-trainer.firebaseapp.com",
+  projectId: "fivem-strafe-trainer",
+  storageBucket: "fivem-strafe-trainer.firebasestorage.app",
+  messagingSenderId: "400882121210",
+  appId: "1:400882121210:web:6db0aa35812a3e64960c43"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 const dot = document.getElementById("dot");
 
 const centerX = 241;
@@ -382,8 +422,67 @@ setInterval(()=>{
     "Errors: " + errors;
 
 },100);
+async function loadLeaderboard() {
 
+    const list = document.getElementById("leaderboard-list");
+
+    const q = query(
+        collection(db, "leaderboard"),
+        orderBy("score", "desc"),
+        limit(10)
+    );
+
+    const snapshot = await getDocs(q);
+
+    list.innerHTML = "";
+
+    snapshot.forEach((d)=>{
+
+        const data = d.data();
+
+        const li = document.createElement("li");
+
+        li.textContent =
+        `${data.name} - ${data.score}`;
+
+        list.appendChild(li);
+
+    });
+
+}
+
+async function saveScore() {
+
+    const playerName =
+    document.getElementById("playerName").value.trim();
+
+    if(!playerName) return;
+
+    const playerRef =
+    doc(db,"leaderboard",playerName);
+
+    const existing =
+    await getDoc(playerRef);
+
+    if(
+        !existing.exists() ||
+        bestStreak > existing.data().score
+    ){
+
+        await setDoc(playerRef,{
+            name: playerName,
+            score: bestStreak
+        });
+
+        loadLeaderboard();
+
+    }
+
+}
+
+setInterval(saveScore,5000);
+
+loadLeaderboard();
 </script>
-
 </body>
 </html>
