@@ -479,9 +479,15 @@ async function loadLeaderboard() {
 
         const li = document.createElement("li");
 
-        li.textContent =
-        `${data.name} - ${data.score}`;
+       const currentName = localStorage.getItem("playerName");
 
+if(data.name === currentName){
+    li.textContent =
+    `${data.name} (You) - ${data.score}`;
+}else{
+    li.textContent =
+    `${data.name} - ${data.score}`;
+}
         list.appendChild(li);
 
     });
