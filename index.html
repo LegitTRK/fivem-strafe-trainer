@@ -309,6 +309,10 @@ document.getElementById("resetBtn")
 
 });
 
+
+document.getElementById("fullscreenBtn")
+.addEventListener("click",()=>{
+
     if(!document.fullscreenElement){
         document.documentElement.requestFullscreen();
     }else{
@@ -316,7 +320,6 @@ document.getElementById("resetBtn")
     }
 
 });
-
 document.addEventListener("keydown",(e)=>{
 
     if(e.key === "Shift"){
